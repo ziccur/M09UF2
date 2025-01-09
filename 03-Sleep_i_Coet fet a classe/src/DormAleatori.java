@@ -24,7 +24,7 @@ public class DormAleatori extends Thread {
             
         }
     }
-
+ 
 
     public static void main(String[] args){
         Thread filJoan = new DormAleatori("Joan");
