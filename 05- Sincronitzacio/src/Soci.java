@@ -18,26 +18,20 @@ public class Soci extends Thread {
 
     @Override
     public void run() {
-        for(int i = 0; i < maxAnys; i++) {
-            for(int y = 0; y <= 12; y++) {
+        for (int i = 0; i < maxAnys; i++) {
+            for (int y = 0; y < 12; y++) {
                 try {
                     Thread.sleep(rnd.nextInt(esperaMax)); // Simula el pas del temps
                 } catch (InterruptedException e) {
                     System.out.println(getName() + " ha estat interromput.");
                 }
 
-                if( y%2 == 0 ){
-                    compte.setSaldo(compte.getSaldo() + aportacio);
+                if (y % 2 == 0) {
+                    compte.ingresar(aportacio); // Ingresa 10
                 } else {
-                    compte.setSaldo(compte.getSaldo() - aportacio);
+                    compte.retirar(aportacio); // Retira 10
                 }
-
             }
         }
     }
-
-    
-
-    
-
 }

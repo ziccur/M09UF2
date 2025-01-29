@@ -1,28 +1,29 @@
-
-//! SINGLETON
-
 public class Compte {
-    
+
     private float saldo;
-    private static Compte instance = null;
+    private static final Compte instance = new Compte(); // Inicialización estática (segura en multihilo)
 
     private Compte() {
         this.saldo = 0;
     }
 
     public static Compte getInstance() {
-        if(instance == null) {
-            instance = new Compte();
-        }
         return instance;
     }
 
-    public void setSaldo(float saldo) {
+    public synchronized void setSaldo(float saldo) {
         this.saldo = saldo;
     }
 
-    public float getSaldo() {
+    public synchronized float getSaldo() {
         return saldo;
     }
 
+    public synchronized void ingresar(float cantidad) {
+        saldo += cantidad;
+    }
+
+    public synchronized void retirar(float cantidad) {
+        saldo -= cantidad;
+    }
 }

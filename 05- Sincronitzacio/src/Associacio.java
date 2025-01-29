@@ -1,6 +1,5 @@
-
 public class Associacio {
-    
+
     int numSocis = 1000;
     Soci[] socis = new Soci[numSocis];
 
@@ -10,13 +9,13 @@ public class Associacio {
         }
     }
 
-    void iniciaCompteTempsSocis(){
+    void iniciaCompteTempsSocis() {
         for (int i = 0; i < numSocis; i++) {
             socis[i].start();
         }
     }
 
-    void esperaPeriodeSocis(){
+    void esperaPeriodeSocis() {
         for (int i = 0; i < numSocis; i++) {
             try {
                 socis[i].join();
@@ -26,9 +25,9 @@ public class Associacio {
         }
     }
 
-    void mostraBalancComptes(){
-        System.out.println("Saldo final: " + socis[0].getCompte().getSaldo());
+    void mostraBalancComptes() {
+        synchronized (Compte.getInstance()) { // Sincronizar acceso al saldo
+            System.out.println("Saldo final: " + socis[0].getCompte().getSaldo());
+        }
     }
-    
-
 }
