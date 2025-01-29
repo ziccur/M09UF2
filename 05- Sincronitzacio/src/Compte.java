@@ -3,14 +3,14 @@
 
 public class Compte {
     
-    float saldo;
-    private Compte instance = null;
+    private float saldo;
+    private static Compte instance = null;
 
     private Compte() {
-        saldo = 0;
+        this.saldo = 0;
     }
 
-    public Compte getInstance() {
+    public static Compte getInstance() {
         if(instance == null) {
             instance = new Compte();
         }
@@ -24,6 +24,5 @@ public class Compte {
     public float getSaldo() {
         return saldo;
     }
-
 
 }
