@@ -1,45 +1,34 @@
-
 import java.util.ArrayList;
+import java.util.List;
 
 public class Taula {
-    
-    ArrayList<Filosof> comensals;
-    ArrayList<Forquilla> forquilles;
+    private List<Filòsof> filòsofs;
+    private List<Forquilla> forquilles;
 
-    public Taula(int numComensals) {
-        comensals = new ArrayList<Filosof>();
-        forquilles = new ArrayList<Forquilla>();
+    public Taula(int numFilòsofs) {
+        filòsofs = new ArrayList<>();
+        forquilles = new ArrayList<>();
 
-        for (int i = 0; i < numComensals; i++) {
-            comensals.add(new Filosof("Filosof " + i, this));
+        for (int i = 0; i < numFilòsofs; i++) {
+            forquilles.add(new Forquilla(i));
         }
-        for (int i = 0; i < numComensals; i++) {
-            forquilles.add(new Forquilla("Forquilla " + i, i));
-        }
-    }
 
-    private int[] getForquillesPerPosicioFilosof(int posicio){
-        int[] posicioForquilles = new int[2];
-        posicioForquilles[0] = posicio;
-        posicioForquilles[1] = (posicio + 1) % comensals.size();
-        return posicioForquilles;
-    }
-
-    public void showTaula(){
-        for (int i = 0; i < comensals.size(); i++) {
-            int[] forquillesFilosof = getForquillesPerPosicioFilosof(i);
-            System.out.printf("%S: esq: %d, dret: %d\n", comensals.get(i).getName(), forquilles.get(forquillesFilosof[0]).getName(), forquilles.get(forquillesFilosof[1]).getName());
+        for (int i = 0; i < numFilòsofs; i++) {
+            Forquilla esquerra = forquilles.get(i);
+            Forquilla dreta = forquilles.get((i + 1) % numFilòsofs);
+            filòsofs.add(new Filòsof("fil" + i, esquerra, dreta));
         }
     }
 
-    public void cridarATaula(){
-        for (Filosof filosof : comensals) {
-            filosof.start();
+    public void showTaula() {
+        for (Filòsof filòsof : filòsofs) {
+            System.out.println(filòsof);
         }
     }
 
-
-
-
-
+    public void cridarATaula() {
+        for (Filòsof filòsof : filòsofs) {
+            filòsof.start();
+        }
+    }
 }
