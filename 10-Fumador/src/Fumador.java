@@ -1,73 +1,79 @@
-
 import java.util.Random;
 
 public class Fumador extends Thread {
+  private Random random = new Random();
 
-    Random  random = new Random();
-    
-    Estanc estanc;
-    Boolean segueixFumant = true;
+  private Estanc estanc;
+  public final int id;
+  private Tabac tabac = null;
+  private Llumi llumi = null;
+  private Paper paper = null;
+  private int fumades = 0;
 
-    int id;
-    Tabac tabac;
-    Paper paper;
-    Llumi llumi;
+  public Fumador(Estanc estanc, int id) {
+    this.estanc = estanc;
+    this.id = id;
+  }
 
-    int fumades;
+  public void fuma() throws InterruptedException {
+    if (tabac != null && llumi != null && paper != null) {
+      System.out.printf("Fumador %d fumant%n", id);
+      fumades++;
+      System.out.printf("Fumador %d ha fumat %d vegades%n", id, fumades);
 
-    public Fumador(int id, Estanc estanc) {
-        this.id = id;
-        this.estanc = estanc;
-        fumades = 0;
+      tabac = null;
+      llumi = null;
+      paper = null;
+
+      Thread.sleep(random.nextInt(500) + 500);
+      
+    }
+  }
+
+  public void compraTabac() throws InterruptedException {
+    System.out.printf("Fumador %d comprant Tabac%n", id);
+    synchronized (estanc) {
+      while ((tabac = estanc.vendreTabac()) == null) {
+        estanc.wait();
+      }
+    }
+  }
+
+  public void compraPaper() throws InterruptedException {
+    System.out.printf("Fumador %d comprant Paper%n", id);
+    synchronized (estanc) {
+      while((paper = estanc.vendrePaper()) == null) {
+        estanc.wait();
+      }
+    }
+  }
+
+  public void compraLlumi() throws InterruptedException {
+    System.out.printf("Fumador %d comprant Llumi%n", id);
+    synchronized (estanc) {
+      while((llumi = estanc.vendreLlumi()) == null) {
+        estanc.wait();
+      }
+    }
+  }
+
+  @Override
+  public void run() {
+
+    while (fumades < 3) {
+
+      try {
+        compraTabac();
+        compraPaper();
+        compraLlumi();
+
+        fuma();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
     }
 
-    public void fuma(){
-        if(tabac != null && paper != null && llumi != null){
-            System.out.println("Fumador " + id + " fumant...");
-            fumades++;
-            tabac = null;
-            paper = null;
-            llumi = null;
-        }
-
-        try {
-            Thread.sleep((long) (500 + random.nextInt(501)));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }  
-    }
-
-    public void compraTabac(){
-        tabac = estanc.venTabac();
-    }
-
-    public void compraPaper(){
-        paper = estanc.venPaper();
-    }
-
-    public void compraLlumi(){
-        llumi = estanc.venLlumi();
-    }
-
-    public void run(){
-        while(segueixFumant){
-            if(tabac == null){
-                compraTabac();
-            }else{
-                if(paper == null){
-                    compraPaper();
-                }else{
-                    if(llumi == null){
-                        compraLlumi();
-                    }
-                }
-            }
-            fuma();
-            if(fumades >= 3 ){
-                segueixFumant = false;
-            }
-        }
-    }
-
-
+  }
+  
 }

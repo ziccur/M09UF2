@@ -1,120 +1,85 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Estanc extends Thread {
 
-    private Random random = new Random();
-    private Boolean obert = true;
+  private static Random random = new Random();
 
-    private ArrayList<Tabac> tabacs;
-    private ArrayList<Paper> papers;
-    private ArrayList<Llumi> llumins;
+  private List<Tabac> tabacs;
+  private List<Llumi> llumins;
+  private List<Paper> papers;
+  private boolean obert = false;
 
-    private Lock lock = new ReentrantLock();
+  public Estanc() {
+    tabacs = new ArrayList<>();
+    llumins = new ArrayList<>();
+    papers = new ArrayList<>();
+  }
 
-    public Estanc() {
-        tabacs = new ArrayList<>();
-        papers = new ArrayList<>();
-        llumins = new ArrayList<>();
+  synchronized public void nouSubministrament() {
+    int seleccio = random.nextInt(3);
+    switch (seleccio) {
+      case 0: afegirTabac(); break;
+      case 1: afegirLlumi(); break;
+      case 2: afegirPaper(); break;
     }
 
-    public void nouSubministrament() {
-        lock.lock(); // Adquirir el Lock
-        try {
-            int item = random.nextInt(3) + 1; // Genera del 0 al 2 sumant 1
-            switch (item) {
-                case 1 -> addTabac();
-                case 2 -> addPaper();
-                case 3 -> addLlum();
-            }
-        } finally {
-            lock.unlock(); // Liberar el Lock
-        }
+    notifyAll();
+  }
+
+  public void afegirTabac() { 
+    System.out.println("Afegint Tabac");
+    tabacs.add(new Tabac()); 
+  }
+  
+  public void afegirLlumi() { 
+    System.out.println("Afegint Llumi");
+    llumins.add(new Llumi()); 
+  }
+  
+  public void afegirPaper() { 
+    System.out.println("Afegint Paper");
+    papers.add(new Paper()); 
+  }
+
+  public Tabac vendreTabac() { 
+    if (tabacs.size() > 0) {
+      return tabacs.remove(tabacs.size() - 1);
+    }
+    else return null;
+  }
+
+  public Llumi vendreLlumi() { 
+    if (llumins.size() > 0) return llumins.remove(llumins.size() - 1);
+    else return null;
+  }
+
+  public Paper vendrePaper() { 
+    if (papers.size() > 0) return papers.remove(papers.size() - 1);
+    else return null;
+  }
+
+  @Override
+  public void run() {
+
+    obert = true;
+    System.out.println("Estanc obert");
+
+    while (obert) {
+      nouSubministrament();
+      
+      try {
+        Thread.sleep(random.nextInt(1000) + 500);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
-    public void addTabac() {
-        lock.lock(); // Adquirir el Lock
-        try {
-            tabacs.add(new Tabac());
-        } finally {
-            lock.unlock(); // Liberar el Lock
-        }
-    }
+    System.out.println("Estanc tancat");
 
-    public void addPaper() {
-        lock.lock(); // Adquirir el Lock
-        try {
-            papers.add(new Paper());
-        } finally {
-            lock.unlock(); // Liberar el Lock
-        }
-    }
+  }
 
-    public void addLlum() {
-        lock.lock(); // Adquirir el Lock
-        try {
-            llumins.add(new Llumi());
-        } finally {
-            lock.unlock(); // Liberar el Lock
-        }
-    }
+  public void tancarEstanc() { obert = false; }
 
-    public Tabac venTabac() {
-        lock.lock(); // Adquirir el Lock
-        try {
-            if (!tabacs.isEmpty()) {
-                Tabac tabac = tabacs.get(0);
-                tabacs.remove(0);
-                return tabac;
-            }
-            return null;
-        } finally {
-            lock.unlock(); // Liberar el Lock
-        }
-    }
-
-    public Paper venPaper() {
-        lock.lock(); // Adquirir el Lock
-        try {
-            if (!papers.isEmpty()) {
-                Paper paper = papers.get(0);
-                papers.remove(0);
-                return paper;
-            }
-            return null;
-        } finally {
-            lock.unlock(); // Liberar el Lock
-        }
-    }
-
-    public Llumi venLlumi() {
-        lock.lock(); // Adquirir el Lock
-        try {
-            if (!llumins.isEmpty()) {
-                Llumi llumi = llumins.get(0);
-                llumins.remove(0);
-                return llumi;
-            }
-            return null;
-        } finally {
-            lock.unlock(); // Liberar el Lock
-        }
-    }
-
-    public void tancarEstanc() {
-        obert = false;
-    }
-
-    public void run() {
-        while (obert) {
-            nouSubministrament();
-            try {
-                Thread.sleep((long) (500 + random.nextInt(1001)));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
