@@ -2,144 +2,155 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BanyUnisex {
-    public static final int BANY_BUIT = 0;
-    public static final int BANY_AMB_HOMES = 1;
-    public static final int BANY_AMB_DONES = 2;
-    public static final int CAPACITAT_MAX = 3;
+    private static final int BUIT = 0;
+    private static final int HOMES = 1;
+    private static final int DONES = 2;
+    private static final int MAXIM = 3;
     
-    private int estatActual;
-    private int ocupants;
-    private Semaphore capacitat;
-    private ReentrantLock lockEstat;
+    private int estat;
+    private int personesDins;
+    private Semaphore semaforOcupacio;
+    private ReentrantLock mutex;
     
     public BanyUnisex() {
-        this.estatActual = BANY_BUIT;
-        this.ocupants = 0;
-        this.capacitat = new Semaphore(CAPACITAT_MAX, true);
-        this.lockEstat = new ReentrantLock(true);
+        this.estat = BUIT;
+        this.personesDins = 0;
+        this.semaforOcupacio = new Semaphore(MAXIM, true);
+        this.mutex = new ReentrantLock(true);
     }
     
-    public void entraHome(String nom) {
-        boolean entered = false;
-        while (!entered) {
-            lockEstat.lock();
+    public void entrarHome(String nom) throws InterruptedException {
+        boolean dins = false;
+        while (!dins) {
+            mutex.lock();
             try {
-                // Permet entrar si el bany està buit o amb homes
-                if (estatActual == BANY_BUIT || estatActual == BANY_AMB_HOMES) {
-                    if (capacitat.tryAcquire()) {
-                        if (estatActual == BANY_BUIT) {
-                            estatActual = BANY_AMB_HOMES;
+                if (estat == BUIT || estat == HOMES) {
+                    if (semaforOcupacio.tryAcquire()) {
+                        if (estat == BUIT) {
+                            estat = HOMES;
                         }
-                        ocupants++;
-                        System.out.println("Home entra al bany. Ocupants: " + ocupants);
-                        entered = true;
+                        personesDins++;
+                        System.out.println(nom + " ha entrat al bany. Total: " + personesDins);
+                        dins = true;
                     }
                 }
             } finally {
-                lockEstat.unlock();
+                mutex.unlock();
             }
-            if (!entered) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            
+            if (!dins) {
+                Thread.sleep(30);
             }
         }
     }
     
-    public void entraDona(String nom) {
-        boolean entered = false;
-        while (!entered) {
-            lockEstat.lock();
+    public void entrarDona(String nom) throws InterruptedException {
+        boolean dins = false;
+        while (!dins) {
+            mutex.lock();
             try {
-                // Permet entrar si el bany està buit o amb dones
-                if (estatActual == BANY_BUIT || estatActual == BANY_AMB_DONES) {
-                    if (capacitat.tryAcquire()) {
-                        if (estatActual == BANY_BUIT) {
-                            estatActual = BANY_AMB_DONES;
+                if (estat == BUIT || estat == DONES) {
+                    if (semaforOcupacio.tryAcquire()) {
+                        if (estat == BUIT) {
+                            estat = DONES;
                         }
-                        ocupants++;
-                        System.out.println("Dona entra en el bany. Ocupants: " + ocupants);
-                        entered = true;
+                        personesDins++;
+                        System.out.println(nom + " ha entrat al bany. Total: " + personesDins);
+                        dins = true;
                     }
                 }
             } finally {
-                lockEstat.unlock();
+                mutex.unlock();
             }
-            if (!entered) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            
+            if (!dins) {
+                Thread.sleep(30);
             }
         }
     }
     
-    public void surtHome(String nom) {
-        lockEstat.lock();
+    public void sortirHome(String nom) {
+        mutex.lock();
         try {
-            ocupants--;
-            System.out.println("Home surt del bany. Ocupants: " + ocupants);
-            capacitat.release();
-            if (ocupants == 0) {
-                estatActual = BANY_BUIT;
-                System.out.println("El bany està buit");
+            personesDins--;
+            semaforOcupacio.release();
+            System.out.println(nom + " ha sortit del bany. Queden: " + personesDins);
+            if (personesDins == 0) {
+                estat = BUIT;
+                System.out.println("Bany buit");
             }
         } finally {
-            lockEstat.unlock();
+            mutex.unlock();
         }
     }
     
-    public void surtDona(String nom) {
-        lockEstat.lock();
+    public void sortirDona(String nom) {
+        mutex.lock();
         try {
-            ocupants--;
-            System.out.println("Dona surt del bany. Ocupants: " + ocupants);
-            capacitat.release();
-            if (ocupants == 0) {
-                estatActual = BANY_BUIT;
-                System.out.println("El bany està buit");
+            personesDins--;
+            semaforOcupacio.release();
+            System.out.println(nom + " ha sortit del bany. Queden: " + personesDins);
+            if (personesDins == 0) {
+                estat = BUIT;
+                System.out.println("Bany buit");
             }
         } finally {
-            lockEstat.unlock();
+            mutex.unlock();
         }
     }
     
     public static void main(String[] args) {
         BanyUnisex bany = new BanyUnisex();
-        Home[] homes = new Home[5];
-        Dona[] dones = new Dona[5];
+        
+        // Creem i iniciem els threads
+        Thread[] threadsHomes = new Thread[5];
+        Thread[] threadsDones = new Thread[5];
         
         for (int i = 0; i < 5; i++) {
-            homes[i] = new Home("Home-" + i, bany);
-            dones[i] = new Dona("Dona-" + i, bany);
+            final int id = i;
+            threadsHomes[i] = new Thread(() -> {
+                try {
+                    bany.entrarHome("Home" + id);
+                    Thread.sleep(200); // Simula temps al bany
+                    bany.sortirHome("Home" + id);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+            
+            threadsDones[i] = new Thread(() -> {
+                try {
+                    bany.entrarDona("Dona" + id);
+                    Thread.sleep(200); // Simula temps al bany
+                    bany.sortirDona("Dona" + id);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
         }
         
-        // Llança primer els fils d'home
+        // Iniciem els threads
         for (int i = 0; i < 5; i++) {
-            homes[i].start();
+            threadsHomes[i].start();
         }
         
-        // Petita pausa per permetre que els homes intentin entrar
         try {
-            Thread.sleep(100);
+            Thread.sleep(150); // Petita pausa
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
         
         for (int i = 0; i < 5; i++) {
-            dones[i].start();
+            threadsDones[i].start();
         }
         
-        // Espera que tots els fils acabin
+        // Esperem que acabin
         for (int i = 0; i < 5; i++) {
             try {
-                homes[i].join();
-                dones[i].join();
+                threadsHomes[i].join();
+                threadsDones[i].join();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
